@@ -23,21 +23,22 @@ services:
       POSTGRES_USER: dbuser
       POSTGRES_PASSWORD: 12345
 
-  main-service:
+  ewm-service:
     build: ./main-service
     container_name: container_main
     ports:
       - "8080:8080"
     depends_on:
-      - main-db
+      - ewm-db
+      - stats-server
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://main-db:5432/mainservice
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/mainservice
       SPRING_DATASOURCE_USERNAME: dbuser
       SPRING_DATASOURCE_PASSWORD: 12345
 
-  main-db:
+  ewm-db:
     image: postgres:16.3
-    container_name: main_postgres
+    container_name: main_db
     ports:
       - "6542:5432"
     environment:
