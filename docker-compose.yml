@@ -25,7 +25,7 @@ services:
 
   ewm-service:
     build: ./main-service
-    container_name: container_main
+    container_name: container_ewm
     ports:
       - "8080:8080"
     depends_on:
@@ -38,7 +38,7 @@ services:
 
   ewm-db:
     image: postgres:16.3
-    container_name: main_db
+    container_name: ewm_db
     ports:
       - "6542:5432"
     environment:
