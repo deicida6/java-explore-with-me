@@ -2,12 +2,14 @@ package ru.practicum.ewm.server.stats.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.server.stats.service.StatsService;
 import ru.practicum.ewm.dto.stats.EndpointHitDto;
 import ru.practicum.ewm.dto.stats.ViewStats;
+import ru.practicum.ewm.server.stats.service.StatsService;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -25,8 +27,8 @@ public class StatsServerController {
     }
 
     @GetMapping("/stats")
-    public List<ViewStats> getStats(@RequestParam(name = "start") String start,
-                                    @RequestParam(name = "end") String end,
+    public List<ViewStats> getStats(@RequestParam(name = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime start,
+                                    @RequestParam(name = "end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime end,
                                     @RequestParam(required = false, name = "uris") String[] uris,
                                     @RequestParam(name = "unique", defaultValue = "false") boolean unique) throws UnsupportedEncodingException {
         log.info("Get stats");
