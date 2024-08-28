@@ -1,6 +1,6 @@
 package ru.practicum.ewm.client.stats;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -11,9 +11,8 @@ import ru.practicum.ewm.dto.stats.EndpointHitDto;
 import java.util.List;
 import java.util.Map;
 
-
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class StatsClient {
     protected final RestTemplate rest;
 
