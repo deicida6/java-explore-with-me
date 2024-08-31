@@ -1,7 +1,6 @@
 package ru.practicum.ewm.event.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.Builder;
 import lombok.Data;
 import ru.practicum.ewm.location.model.Location;
 
