@@ -2,12 +2,11 @@ package ru.practicum.ewm.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.exception.DuplicateEmailException;
+import ru.practicum.ewm.exception.DuplicateNameException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
@@ -46,13 +45,10 @@ public class UserServiceImpl implements UserService {
     public UserDto addUserAdmin(NewUserRequest newUserRequest) {
         User user = UserMapper.toUser(newUserRequest);
         UserDto userDto;
-        try {
-            userDto = UserMapper.toUserDto(userRepository.save(user));
-        } catch (DataIntegrityViolationException e) {
-            log.info("Дублирование почты пользователя");
-            throw new DuplicateEmailException(e.getMessage());
+        if (userRepository.existsByEmail(newUserRequest.getEmail())) {
+            throw new DuplicateNameException("Задублировался email");
         }
-        return userDto;
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
     @Transactional

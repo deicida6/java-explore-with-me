@@ -51,29 +51,35 @@ public class ParticipationServiceImpl implements ParticipationService {
     @Transactional
     @Override
     public ParticipationRequestDto addParticipationRequestPrivate(Long userId, Long eventId) {
-        Event event = eventRepository.getEventsById(eventId);
-        List<ParticipationRequest> participationRequestList = participationRepository.getParticipationRequestsByRequesterAndEvent(userId, eventId);
+        // Получение события
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found"));
 
-        validateAddParticipationRequestPrivate(event, participationRequestList, userId);
+        // Проверка существования запроса на участие
+        List<ParticipationRequest> existingRequests = participationRepository.getParticipationRequestsByRequesterAndEvent(userId, eventId);
+        validateAddParticipationRequestPrivate(event, existingRequests, userId);
 
+        // Создание нового запроса на участие
         ParticipationRequest participationRequest = ParticipationRequest.builder()
                 .created(LocalDateTime.now())
                 .event(eventId)
                 .requester(userId)
                 .build();
 
+        // Обновление статуса запроса и количества подтвержденных запросов
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             participationRequest.setStatus(Status.CONFIRMED);
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-            eventRepository.save(event);
         } else {
             participationRequest.setStatus(Status.PENDING);
-            eventRepository.save(event);
         }
 
+        // Сохранение изменений в базе данных
+        eventRepository.save(event);
         ParticipationRequest newParticipationRequest = participationRepository.save(participationRequest);
-        ParticipationRequestDto participationRequestDto = ParticipationMapper
-                .toParticipationRequestDto(newParticipationRequest);
+
+        // Преобразование в DTO и возврат
+        ParticipationRequestDto participationRequestDto = ParticipationMapper.toParticipationRequestDto(newParticipationRequest);
         participationRequestDto.setId(newParticipationRequest.getId());
 
         return participationRequestDto;

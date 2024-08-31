@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "participation")
+@Table(name = "participation_requests")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

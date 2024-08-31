@@ -156,22 +156,26 @@ public class EventServiceImpl implements EventService {
                 new NotFoundException("Событие (id = " + eventId + ") или пользователь (id = " + userId + ") не найдены"));
 
         // Определяем статус, который необходимо установить
-        Status status = Status.valueOf(eventRequestStatusUpdateRequest.getStatus());
+        Status status = eventRequestStatusUpdateRequest.getStatus();
 
         // Получаем список запросов на участие по идентификаторам
-        List<ParticipationRequest> participationRequests = participationRepository.getParticipationRequestByIdIn(eventRequestStatusUpdateRequest.getRequestIds());
+        List<ParticipationRequest> participationRequests = participationRepository.findByIdIn(eventRequestStatusUpdateRequest.getRequestIds());
 
         // Если лимит участников равен 0 и не требуется модерация запросов
         if (event.getParticipantLimit() == 0 && !event.getRequestModeration()) {
             return buildResult(new ArrayList<>(), new ArrayList<>());
         }
 
-        // Если модерация запросов не требуется
+        if (event.getConfirmedRequests() != null
+                && event.getParticipantLimit() > 0
+                && event.getConfirmedRequests().equals(Long.valueOf(event.getParticipantLimit()))) {
+            throw new OverflowLimitException("Переполнение запросов");
+        }
+
         if (!event.getRequestModeration()) {
             return processRequestsWithoutModeration(event, status, participationRequests);
         }
 
-        // Если требуется модерация запросов
         return processRequestsWithModeration(event, status, participationRequests);
     }
 

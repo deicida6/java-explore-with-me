@@ -9,7 +9,7 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
 
     List<ParticipationRequest> getParticipationRequestsByRequesterAndEvent(Long userId, Long eventId);
 
-    List<ParticipationRequest> getParticipationRequestByIdIn(List<Long> requestId);
+    List<ParticipationRequest> findByIdIn(List<Long> requestId);
 
     List<ParticipationRequest> getParticipationRequestsByRequesterAndEventNotIn(Long userId, List<Long> eventIdList);
 

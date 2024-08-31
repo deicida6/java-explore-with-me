@@ -2,7 +2,6 @@ package ru.practicum.ewm.category.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,16 +41,12 @@ public class CategoryServiceImpl implements CategoryService {
         if (!categoryRepository.existsById(catId)) {
             throw new NotFoundException("Категория не найдена");
         }
-        Category newCategory = CategoryMapper.toCategory(newCategoryDto);
-        newCategory.setId(catId);
-        CategoryDto categoryDto;
-        try {
-            categoryDto = CategoryMapper.toCategoryDto(categoryRepository.save(newCategory));
-        } catch (DataIntegrityViolationException e) {
-            log.info("Задублировалась имя категории");
+        if (categoryRepository.existsByName(newCategoryDto.getName()) && !categoryRepository.getByName(newCategoryDto.getName()).getId().equals(catId)) {
             throw new DuplicateNameException("Задублировалось имя категории");
         }
-        return categoryDto;
+        Category newCategory = CategoryMapper.toCategory(newCategoryDto);
+        newCategory.setId(catId);
+        return CategoryMapper.toCategoryDto(categoryRepository.save(newCategory));
     }
 
     @Transactional
@@ -84,10 +79,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public CategoryDto getCategoryByIdPublic(Long catId) {
-        Category category = categoryRepository.getById(catId);
-        if (category == null) {
+        if (!categoryRepository.existsById(catId)) {
             throw new NotFoundException("Категория не найдена");
         }
-        return CategoryMapper.toCategoryDto(category);
+        return CategoryMapper.toCategoryDto(categoryRepository.getById(catId));
     }
 }

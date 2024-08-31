@@ -7,4 +7,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Category getById(Long catId);
 
     boolean existsByName(String name);
+
+    Category getByName(String name);
 }
