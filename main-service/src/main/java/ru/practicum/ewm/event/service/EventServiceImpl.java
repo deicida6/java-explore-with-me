@@ -34,6 +34,7 @@ import ru.practicum.ewm.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -324,7 +325,7 @@ public class EventServiceImpl implements EventService {
                 .build();
 
         try {
-            statsClient.addRequest(request.getRemoteAddr(), endpointHitDto);
+            statsClient.addRequest(endpointHitDto);
         } catch (RuntimeException e) {
             throw new IllegalArgumentException(e.getLocalizedMessage());
         }
@@ -537,25 +538,28 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new NotFoundException("Запрашиваемый объект не найден");
         }
-        String timeStart = event.getCreatedOn().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String timeNow = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String[] uris = {request.getRequestURI()};
+        LocalDateTime timeStart = event.getCreatedOn();
+        LocalDateTime timeNow = LocalDateTime.now();
+        List<String> uris = Collections.singletonList(request.getRequestURI());
 
-        ResponseEntity<Object> response = statsClient.getStats(request.getRequestURI(), timeStart, timeNow, uris, true);
-        List<ViewStats> resp = (List<ViewStats>) response.getBody();
+        ResponseEntity<List<ViewStats>> response = statsClient.getStats(timeStart, timeNow, uris, true);
+
+        List<ViewStats> resp = response.hasBody() ? response.getBody() : Collections.emptyList();
+
         if (resp.isEmpty()) {
             event.setViews(event.getViews() + 1);
             eventRepository.save(event);
         }
+
         EndpointHitDto endpointHitDto =  EndpointHitDto.builder()
                 .id(null)
                 .app("main-service")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
-                .timestamp(timeNow)
+                .timestamp(timeNow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build();
 
-        statsClient.addRequest(request.getRemoteAddr(), endpointHitDto);
+        statsClient.addRequest(endpointHitDto);
 
         return EventMapper.toEventFullDto(event);
     }
