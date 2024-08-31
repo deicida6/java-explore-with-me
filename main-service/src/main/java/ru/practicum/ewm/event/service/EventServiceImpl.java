@@ -69,7 +69,7 @@ public class EventServiceImpl implements EventService {
         if (start.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new IllegalArgumentException("Incorrectly  time");
         }
-        if(newEventDto.getParticipantLimit() == null) {
+        if (newEventDto.getParticipantLimit() == null) {
             newEventDto.setParticipantLimit(0);
         }
         locationRepository.save(newEventDto.getLocation());
