@@ -154,10 +154,6 @@ public class EventServiceImpl implements EventService {
         // Получаем событие по идентификатору и идентификатору инициатора
         Event event = eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
                 new NotFoundException("Событие (id = " + eventId + ") или пользователь (id = " + userId + ") не найдены"));
-        // Проверяем, достигнут ли лимит участников
-        if (event.getParticipantLimit() > 0 && event.getConfirmedRequests().equals(event.getParticipantLimit())) {
-            throw new OverflowLimitException("Достигнут лимит участников");
-        }
 
         // Определяем статус, который необходимо установить
         Status status = Status.valueOf(eventRequestStatusUpdateRequest.getStatus());
