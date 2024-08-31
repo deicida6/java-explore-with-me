@@ -105,7 +105,7 @@ public class ParticipationServiceImpl implements ParticipationService {
             throw new RepeatParticipationRequestException("Запрос пустой, повтори");
         }
         if (event == null) {
-            throw new IllegalArgumentException("Запршиваемое не найдено.");
+            throw new IllegalArgumentException("Запрашиваемое не найдено.");
         } else if (event.getInitiator().getId().equals(userId)) {
             throw new RepeatParticipationRequestException("Добавлен повторный запрос");
         } else if (event.getState() == null || !event.getState().equals(State.PUBLISHED)) {

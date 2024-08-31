@@ -1,8 +1,10 @@
 package ru.practicum.ewm.event.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.location.model.Location;
 import ru.practicum.ewm.user.model.User;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(name = "events")
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Event {
 
@@ -20,23 +24,23 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(length = 2000)
     private String annotation;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column
+    @Column(name = "confirmed_requests")
     private Long confirmedRequests;
 
-    @Column
+    @Column(name = "created_on")
     private LocalDateTime createdOn;
 
-    @Column
+    @Column(length = 7000)
     private String description;
 
-    @Column
+    @Column(name = "event_date")
     private LocalDateTime eventDate;
 
     @ManyToOne
@@ -50,13 +54,13 @@ public class Event {
     @Column
     private Boolean paid;
 
-    @Column
+    @Column(name = "participant_limit")
     private Integer participantLimit;
 
-    @Column
+    @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
-    @Column
+    @Column(name = "request_moderation")
     private Boolean requestModeration;
 
     @Enumerated(EnumType.STRING)

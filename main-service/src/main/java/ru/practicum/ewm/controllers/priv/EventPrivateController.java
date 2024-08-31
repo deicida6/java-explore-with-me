@@ -44,8 +44,7 @@ public class EventPrivateController {
         log.info("Запрос к конечной точке получен: '{} {}', строка параметров запроса: '{}'",
                 request.getMethod(), request.getRequestURI(), request.getQueryString());
         log.info("Create event with userId={}", userId);
-        EventFullDto eventFullDto = eventService.addEventPrivate(userId, newEventDto);
-        return eventFullDto;
+        return eventService.addEventPrivate(userId, newEventDto);
     }
 
     @GetMapping("/{eventId}")

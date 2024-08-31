@@ -6,10 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
 public class NewCategoryDto {
     @NotBlank
-    @Size(min = 1, message = "Имя слишком короткое")
-    @Size(max = 50, message = "Имя слишком длинное")
+    @Size(min = 1, max = 50)
     private String name;
 }

@@ -1,8 +1,10 @@
 package ru.practicum.ewm.compilation.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.ewm.event.model.Event;
 
 import java.util.Set;
@@ -10,6 +12,8 @@ import java.util.Set;
 @Entity
 @Data
 @Table(name = "compilations")
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Compilation {
 

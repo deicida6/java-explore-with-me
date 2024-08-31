@@ -5,7 +5,6 @@ import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.State;
-import ru.practicum.ewm.location.mapper.LocationMapper;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.model.User;
 
@@ -23,7 +22,7 @@ public class EventMapper {
                 .description(event.getDescription())
                 .eventDate(event.getEventDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
-                .location(LocationMapper.toLocationDto(event.getLocation()))
+                .location(event.getLocation())
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
                 .publishedOn(event.getPublishedOn() == null ? null : event.getPublishedOn().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
@@ -58,9 +57,9 @@ public class EventMapper {
                 .initiator(initiator)
                 .location(newEventDto.getLocation())
                 .confirmedRequests(0L)
-                .paid(newEventDto.getPaid() == null ? false : newEventDto.getPaid())
-                .participantLimit(newEventDto.getParticipantLimit() == null ? 0 : newEventDto.getParticipantLimit())
-                .requestModeration(newEventDto.getRequestModeration() == null ? true : newEventDto.getRequestModeration())
+                .paid(newEventDto.getPaid() != null && newEventDto.getPaid())
+                .participantLimit(newEventDto.getParticipantLimit())
+                .requestModeration(newEventDto.getRequestModeration() == null || newEventDto.getRequestModeration())
                 .state(State.PENDING)
                 .title(newEventDto.getTitle())
                 .views(0L)

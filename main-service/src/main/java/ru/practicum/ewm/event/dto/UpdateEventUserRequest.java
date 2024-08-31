@@ -26,6 +26,7 @@ public class UpdateEventUserRequest {
 
     private Boolean paid;
 
+    @Positive
     private Integer participantLimit;
 
     private Boolean requestModeration;

@@ -69,31 +69,28 @@ public class EventServiceImpl implements EventService {
         if (start.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new IllegalArgumentException("Incorrectly  time");
         }
-        Location location = locationRepository.save(newEventDto.getLocation());
-        newEventDto.setLocation(location);
+        if(newEventDto.getParticipantLimit() == null) {
+            newEventDto.setParticipantLimit(0);
+        }
+        locationRepository.save(newEventDto.getLocation());
         Category category = categoryRepository.getById(newEventDto.getCategory());
         User user = userRepository.getUserById(userId);
-
-        Event event = EventMapper.toEvent(newEventDto, user, category);
-        return EventMapper.toEventFullDto(eventRepository.save(event));
+        return EventMapper.toEventFullDto(eventRepository.save(EventMapper.toEvent(newEventDto, user, category)));
     }
 
     @Transactional
     @Override
     public EventFullDto getEventPrivate(Long userId, Long eventId) {
-
-        Event event = eventRepository.getEventsByIdAndInitiatorId(eventId, userId);
-        if (event == null) {
-            throw new NotFoundException("Запрашиваемый объект не найден");
-        }
-        return EventMapper.toEventFullDto(event);
+        return EventMapper.toEventFullDto(eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
+                new NotFoundException("Событие (id = " + eventId + ") или пользователь (id = " + userId + ") не найдены")));
     }
 
 
     @Transactional
     @Override
     public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
-        Event oldEvent = eventRepository.getEventsByIdAndInitiatorId(eventId, userId);
+        Event oldEvent = eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
+                new NotFoundException("Событие (id = " + eventId + ") или пользователь (id = " + userId + ") не найдены"));
 
         validateUpdateEventPrivate(oldEvent, updateEventUserRequest);
 
@@ -155,11 +152,8 @@ public class EventServiceImpl implements EventService {
                                                                           Long eventId,
                                                                           EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
         // Получаем событие по идентификатору и идентификатору инициатора
-        Event event = eventRepository.getEventsByIdAndInitiatorId(eventId, userId);
-        if (event == null) {
-            throw new NotFoundException("Запрашиваемый объект не найден");
-        }
-
+        Event event = eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
+                new NotFoundException("Событие (id = " + eventId + ") или пользователь (id = " + userId + ") не найдены"));
         // Проверяем, достигнут ли лимит участников
         if (event.getParticipantLimit() > 0 && event.getConfirmedRequests().equals(event.getParticipantLimit())) {
             throw new OverflowLimitException("Достигнут лимит участников");
@@ -189,7 +183,7 @@ public class EventServiceImpl implements EventService {
     @Transactional
     @Override
     public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                             String rangeStart, String rangeEnd, Integer from, Integer size) {
+                                             LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
 
         int pageNumber = from / size;
         Pageable pageable = PageRequest.of(pageNumber, size);
@@ -197,17 +191,13 @@ public class EventServiceImpl implements EventService {
         // Преобразуем строковые состояния в перечисление State
         List<State> stateEnum = (states != null) ? states.stream().map(State::valueOf).collect(Collectors.toList()) : null;
 
-        // Парсим даты, если они заданы
-        LocalDateTime start = (rangeStart != null) ? LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
-        LocalDateTime end = (rangeEnd != null) ? LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
-
         // Проверка корректности диапазона дат
-        if (start != null && end != null && start.isAfter(end)) {
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new IllegalArgumentException("Дата начала не может быть позже даты окончания");
         }
 
         // Создание спецификации для динамического поиска событий
-        Specification<Event> specification = buildSpecification(users, stateEnum, categories, start, end);
+        Specification<Event> specification = buildSpecification(users, stateEnum, categories, rangeStart, rangeEnd);
 
         // Поиск событий по спецификации и преобразование их в DTO
         return eventRepository.findAll(specification, pageable).stream()
@@ -215,7 +205,6 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
-    // Метод для создания спецификации поиска событий
     private Specification<Event> buildSpecification(List<Long> users, List<State> states, List<Long> categories,
                                                     LocalDateTime start, LocalDateTime end) {
         return (root, query, criteriaBuilder) -> {
@@ -223,13 +212,13 @@ public class EventServiceImpl implements EventService {
 
             // Добавляем условия фильтрации, если параметры заданы
             if (users != null) {
-                predicates.add(root.get("initiatorId").in(users));
+                predicates.add(root.get("initiator").get("id").in(users));
             }
             if (states != null) {
                 predicates.add(root.get("state").in(states));
             }
             if (categories != null) {
-                predicates.add(root.get("categoryId").in(categories));
+                predicates.add(root.get("category").get("id").in(categories));
             }
             if (start != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("eventDate"), start));
@@ -238,7 +227,6 @@ public class EventServiceImpl implements EventService {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("eventDate"), end));
             }
 
-            // Возвращаем итоговое условие, объединенное с помощью AND
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }

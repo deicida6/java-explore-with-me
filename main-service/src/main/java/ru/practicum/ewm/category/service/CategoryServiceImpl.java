@@ -27,30 +27,26 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
 
-
     @Transactional
     @Override
     public CategoryDto addCategoryAdmin(NewCategoryDto newCategoryDto) {
-        Category category = CategoryMapper.toCategory(newCategoryDto);
-        try {
-            return CategoryMapper.toCategoryDto(categoryRepository.save(category));
-        } catch (DataIntegrityViolationException e) {
-            log.info("Задублировалась имя категории");
+        if (categoryRepository.existsByName(newCategoryDto.getName())) {
             throw new DuplicateNameException("Задублировалось имя категории");
         }
+            return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(newCategoryDto)));
     }
 
     @Transactional
     @Override
     public CategoryDto updateCategoryAdmin(Long catId, NewCategoryDto newCategoryDto) {
-        if (categoryRepository.findById(catId).isEmpty()) {
+        if (!categoryRepository.existsById(catId)) {
             throw new NotFoundException("Категория не найдена");
         }
         Category newCategory = CategoryMapper.toCategory(newCategoryDto);
         newCategory.setId(catId);
         CategoryDto categoryDto;
         try {
-            categoryDto = CategoryMapper.toCategoryDto(categoryRepository.saveAndFlush(newCategory));
+            categoryDto = CategoryMapper.toCategoryDto(categoryRepository.save(newCategory));
         } catch (DataIntegrityViolationException e) {
             log.info("Задублировалась имя категории");
             throw new DuplicateNameException("Задублировалось имя категории");
@@ -61,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public void deleteCategoryAdmin(Long catId) {
-        if (categoryRepository.findById(catId).isEmpty()) {
+        if (!categoryRepository.existsById(catId)) {
             throw new NotFoundException("Категория не найдена");
         }
         if (eventRepository.findFirstByCategoryId(catId) != null) {

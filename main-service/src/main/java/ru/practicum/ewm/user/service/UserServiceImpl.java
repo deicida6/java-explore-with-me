@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         User user = UserMapper.toUser(newUserRequest);
         UserDto userDto;
         try {
-            userDto = UserMapper.toUserDto(userRepository.saveAndFlush(user));
+            userDto = UserMapper.toUserDto(userRepository.save(user));
         } catch (DataIntegrityViolationException e) {
             log.info("Дублирование почты пользователя");
             throw new DuplicateEmailException(e.getMessage());
