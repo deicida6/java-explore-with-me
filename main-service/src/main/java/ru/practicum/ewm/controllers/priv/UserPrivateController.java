@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/users/{userId}/requests")
 @Validated
 @RequiredArgsConstructor
-public class ParticipationPrivateController {
+public class UserPrivateController {
 
     private final ParticipationService participationService;
 
