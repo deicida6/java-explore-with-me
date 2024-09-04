@@ -66,8 +66,6 @@ public class CommentServiceImpl implements CommentService {
         return CommentMapper.toCommentDto(commentRepository.save(upComment));
     }
 
-
-    @Transactional
     @Override
     public List<CommentDto> getCommentsPrivate(Long eventId, Integer from, Integer size) {
 
@@ -83,7 +81,6 @@ public class CommentServiceImpl implements CommentService {
         return commentsDto;
     }
 
-    @Transactional
     @Override
     public CommentDto getCommentByIdPrivate(Long commentId) {
         validateIdComment(commentId);
@@ -110,7 +107,6 @@ public class CommentServiceImpl implements CommentService {
 
         return CommentMapper.toCommentDto(commentRepository.save(newComment));
     }
-
 
     private void validateIdUser(Long userId) {
         if (!userRepository.existsById(userId)) {
